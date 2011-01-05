@@ -2,7 +2,7 @@
 
 #########################################################################
 #
-# Copyright 2011 Anders Nøklestad
+# Copyright 2011 Anders Nøklestad (noklesta; anders.noklestad@iln.uio.no)
 # Licensed under the MIT license (see MIT-LICENSE.TXT)
 #
 #########################################################################
