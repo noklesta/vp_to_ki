@@ -12,7 +12,7 @@ Requirements
 [Nokogiri](http://nokogiri.org/) and
 [Erubis](http://www.kuwata-lab.com/erubis/). Normally, you can just do:
 
-  sudo gem install nokogiri erubis
+    sudo gem install nokogiri erubis
 
 License
 -------
