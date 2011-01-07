@@ -7,6 +7,7 @@
 #
 #########################################################################
 
+require 'rubygems'
 require 'nokogiri'
 require 'erubis'
 
