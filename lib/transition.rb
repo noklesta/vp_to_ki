@@ -27,7 +27,7 @@ class Transition
       end
     end
     @name.strip!
-    @action.strip!
+    @action.strip! if @action
   end
 
   def from_id
