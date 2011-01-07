@@ -95,7 +95,8 @@ class State
     @transitions.each do |transition|
       context = {
         :indent => indent,
-        :transition_name => transition['name'],
+        :name => transition.name,
+        :action => transition.action,
         :dest_path => @@state_map[transition.to_id].path
       }
       transition_strings << Printer::TRANSITION.evaluate(context)

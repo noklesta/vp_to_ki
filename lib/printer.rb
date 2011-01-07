@@ -25,7 +25,11 @@ module Printer
 
   EOT
 
-  TRANSITION = Erubis::Eruby.new("<%= @indent %>\t<%= @transition_name %>: function() {\n" +
+  TRANSITION = Erubis::Eruby.new("<%= @indent %>\t<%= @name %>: function() {\n" +
+                                 "<% if @action %>\n" +
+                                 "<%= @indent %>\t\t<%= $project_name %>." +
+                                   "statechartFunctions.<%= @action %>();\n" +
+                                 "<% end %>\n" +
                                  "<%= @indent %>\t\tthis.gotoState('<%= @dest_path %>');\n" +
                                  "<%= @indent %>\t}")
   
