@@ -20,8 +20,19 @@ module Printer
 <% end %>
   EOT
 
+  NONTRANSITIONS_COMMENT = Erubis::Eruby.new <<-EOT
+<%= indent %>\t// Non-transition events handled by '<%= @name %>' state
+
+  EOT
+
+  NONTRANSITION_EVENT = Erubis::Eruby.new(
+    "<%= @indent %>\t<%= @name %>: function() {\n" +
+    "<%= @indent %>\t\t<%= $project_name %>.statechartFunctions.<%= @action %>();\n" +
+    "<%= @indent %>\t}"
+  )
+
   TRANSITIONS_COMMENT = Erubis::Eruby.new <<-EOT
-<%= indent %>\t// Events handled by '<%= @name %>' state
+<%= indent %>\t// Transition events handled by '<%= @name %>' state
 
   EOT
 

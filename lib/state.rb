@@ -24,10 +24,12 @@ class State
       NONROOT_INITIAL_PSEUDO_STATE_SELECTOR
 
     @transitions = []
+    @nontransition_events = []
     @@state_map[@node['id']] = self if @level > 0
 
     find_substates
     find_actions
+    find_constraints  # actually events that do not lead to state transitions
   end
 
   def path
@@ -40,9 +42,12 @@ class State
   end
 
   def output
+    parts = []
     str = Printer::STATE_START.evaluate(self)
-    str += transitions_output unless @transitions.empty?
-    str += substates_output unless @substates.empty?
+    parts << nontransition_events_output unless @nontransition_events.empty?
+    parts << transitions_output unless @transitions.empty?
+    parts << substates_output unless @substates.empty?
+    str += parts.join(",\n\n") + ("\n") unless parts.empty?
     str += Printer::STATE_END.evaluate(self)
     str
   end
@@ -85,8 +90,48 @@ class State
     end
   end
 
+  # Since I could not find a built-in way in VP state diagrams to represent events
+  # that do not lead to a state transition, I "abuse" constraints to do this.
+  # Constraints allow us to simply place a text string within a state in the diagram.
+  # If the string contains a slash, we interpret what comes before the slash as the name
+  # of an event and what comes after it as the name of the function to call. If no slash
+  # is found, the entire string is interpreted as both the name of the event and of the
+  # function to call.
+  def find_constraints
+    matches = $doc.css(%Q{Model[displayModelType="Constraint"] > ModelProperties > } +
+      %Q{ModelRefProperty[name="from"] > ModelRef[id="#{@node['id']}"]})
+    matches.each do |match|
+      register_nontransition_event(match)
+    end
+  end
+
+  def register_nontransition_event(node)
+    constraint_node = node.parent.parent.parent
+    name, action = constraint_node['name'].split('/')
+    action = name unless action  # identical if the constraint contains no slash
+    name.strip!
+    action.strip!
+
+    @nontransition_events << {:name => name, :action => action}
+  end
+
   def indent
     @indent ||= "\t" * (@level + 1)
+  end
+
+  def nontransition_events_output
+    str = Printer::NONTRANSITIONS_COMMENT.evaluate(self)
+    event_strings = []
+    @nontransition_events.each do |event|
+      context = {
+        :indent => indent,
+        :name => event[:name],
+        :action => event[:action]
+      }
+      event_strings << Printer::NONTRANSITION_EVENT.evaluate(context)
+    end
+    str += event_strings.join(",\n\n")
+    str
   end
 
   def transitions_output
@@ -101,7 +146,7 @@ class State
       }
       transition_strings << Printer::TRANSITION.evaluate(context)
     end
-    str += transition_strings.join(",\n\n") + ("\n")
+    str += transition_strings.join(",\n\n")
     str
   end
 
@@ -111,7 +156,7 @@ class State
     @substates.each do |substate|
       substate_strings << substate.output
     end
-    str += substate_strings.join(",\n\n") + ("\n")
+    str += substate_strings.join(",\n\n")
     str
   end
 end
