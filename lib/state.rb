@@ -1,10 +1,17 @@
 class State
-  ROOT_SUBSTATE_SELECTOR = 'Model[displayModelType="State"]'
-  NONROOT_SUBSTATE_SELECTOR = 'ChildModels > Model[displayModelType="Region"] > ' + 
-    'ChildModels > Model[displayModelType="State"]'
-  ROOT_INITIAL_PSEUDO_STATE_SELECTOR = 'Model[displayModelType="Initial Pseudo State"]'
-  NONROOT_INITIAL_PSEUDO_STATE_SELECTOR = 'ChildModels > Model[displayModelType="Region"] > ' + 
-    'ChildModels > Model[displayModelType="Initial Pseudo State"]'
+  # Finds one or more states
+  STATE_SELECTOR = 'Model[displayModelType="State"]'
+
+  # Finds the region(s) of a state. In Visual Paradigm, a state cannot have substates unless
+  # it contains at least one region. If we find several regions, they will be interpreted
+  # as concurrent substates. If we find only one region, it has no purpose in the Ki code,
+  # so it will be ignored and its substates will become substates of the state containing
+  # the region.
+  REGION_SELECTOR = 'ChildModels > Model[displayModelType="Region"]'
+
+  # Finds initial pseudo states. An initial pseudo state should have a
+  # transition to the default state ('initialSubstate') of the containing state.
+  INITIAL_PSEUDO_STATE_SELECTOR = 'Model[displayModelType="Initial Pseudo State"]'
 
   @@state_map = {}
   attr_reader :name, :initial_substate
@@ -14,18 +21,28 @@ class State
     @@state_map[transition.from_id].transitions << transition
   end
  
-  def initialize(node, parent_state, level)
+  def initialize(node, parent_state, level, from_region = false)
     @node = node    # The Nokogiri::XML::Node object representing this state
     @parent_state = parent_state
     @level = level  # The level in the state hierarchy (used for indentation)
-    @name = @level == 0 ? 'rootState' : node['name']
-    @substate_selector = @level == 0 ? ROOT_SUBSTATE_SELECTOR : NONROOT_SUBSTATE_SELECTOR
-    @initial_pseudo_state_selector = @level == 0 ? ROOT_INITIAL_PSEUDO_STATE_SELECTOR :
-      NONROOT_INITIAL_PSEUDO_STATE_SELECTOR
+    @name = level == 0 ? 'rootState' : node['name']
+
+    # If this is the root state, or if it is a state that is constructed from a
+    # region node (i.e. it is a concurrent/orthogonal state), it has no region
+    # child. Otherwise it does.
+    region_selector = (level == 0 || from_region) ? nil : REGION_SELECTOR
+
+    # The root state node (<Project>) has a Models child, while other states have
+    # ChildModel children
+    child_selector = level > 0 ? 'ChildModels' : 'Models'
+
+    @substate_selector = [region_selector, child_selector, STATE_SELECTOR].compact.join(' > ')
+    @initial_pseudo_state_selector =
+      [region_selector, child_selector, INITIAL_PSEUDO_STATE_SELECTOR].compact.join(' > ')
 
     @transitions = []
     @nontransition_events = []
-    @@state_map[@node['id']] = self if @level > 0
+    @@state_map[@node['id']] = self if level > 0
 
     find_substates
     find_actions
@@ -58,10 +75,26 @@ class State
 
   def find_substates
     @substates = []
-    @node.>(@substate_selector).map do |substate_node|
+    regions = @node.>(REGION_SELECTOR)
+    if regions.size > 1
+      create_concurrent_states_from(regions)
+    else
+      create_substates
+      find_initial_substate
+    end
+  end
+
+  def create_concurrent_states_from(regions)
+    @substates_are_concurrent = true
+    regions.each do |region_node|
+      @substates << State.new(region_node, self, @level + 1, true)
+    end
+  end
+
+  def create_substates
+    @node.>(@substate_selector).each do |substate_node|
       @substates << State.new(substate_node, self, @level + 1)
     end
-    find_initial_substate
   end
 
   def find_initial_substate

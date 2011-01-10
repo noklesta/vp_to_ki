@@ -5,6 +5,9 @@ module Printer
 <% if @initial_substate %>
 <%= indent %>\tinitialSubstate: '<%= @initial_substate.name %>',
 
+<% elsif @substates_are_concurrent %>
+<%= indent %>\tsubstatesAreConcurrent: YES,
+
 <% end %>
 <% if @entry_action %>
 <%= indent %>\tenterState: function() {

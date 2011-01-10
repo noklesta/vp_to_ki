@@ -23,7 +23,7 @@ end
 File.open(ARGV[0]) do |file|
   $doc = Nokogiri::XML(file)
   $project_name = $doc.>('Project').first['name']
-  root_state = State.new($doc.>('Project > Models').first, nil, 0)  # recursively builds state tree
+  root_state = State.new($doc.>('Project').first, nil, 0)  # recursively builds state tree
   Transition.find_transitions
   Printer.print_statechart(root_state)
 end
