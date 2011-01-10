@@ -3,10 +3,6 @@ Visual Paradigm for UML (including the free community edition) and
 converts it to statechart code that can be used with the Ki statechart
 framework (https://github.com/FrozenCanuck/Ki).
 
-Note that, in Visual Paradigm, a state needs to have a region in order
-to have substates (the substates will be children of the region, which
-is a child of the superstate).
-
 Requirements
 ------------
 [Nokogiri](http://nokogiri.org/) and
