@@ -11,13 +11,13 @@ module Printer
 <% end %>
 <% if @entry_action %>
 <%= indent %>\tenterState: function() {
-<%= indent %>\t\t<%= $project_name %>.statechartFunctions.<%= @entry_action %>();
+<%= indent %>\t\tthis.<%= @entry_action %>();
 <%= indent %>\t}<%= @exit_action || !@transitions.empty? || !@substates.empty? ? ',' : '' %>
 
 <% end %>
 <% if @exit_action %>
 <%= indent %>\texitState: function() {
-<%= indent %>\t\t<%= $project_name %>.statechartFunctions.<%= @exit_action %>();
+<%= indent %>\t\tthis.<%= @exit_action %>();
 <%= indent %>\t}<%= !@transitions.empty? || !@substates.empty? ? ',' : '' %>
 
 <% end %>
@@ -30,7 +30,7 @@ module Printer
 
   NONTRANSITION_EVENT = Erubis::Eruby.new(
     "<%= @indent %>\t<%= @name %>: function() {\n" +
-    "<%= @indent %>\t\t<%= $project_name %>.statechartFunctions.<%= @action %>();\n" +
+    "<%= @indent %>\t\tthis.<%= @action %>();\n" +
     "<%= @indent %>\t}"
   )
 
@@ -41,8 +41,7 @@ module Printer
 
   TRANSITION = Erubis::Eruby.new("<%= @indent %>\t<%= @name %>: function() {\n" +
                                  "<% if @action %>\n" +
-                                 "<%= @indent %>\t\t<%= $project_name %>." +
-                                   "statechartFunctions.<%= @action %>();\n" +
+                                 "<%= @indent %>\t\tthis.<%= @action %>();\n" +
                                  "<% end %>\n" +
                                  "<%= @indent %>\t\tthis.gotoState('<%= @dest_path %>');\n" +
                                  "<%= @indent %>\t}")
