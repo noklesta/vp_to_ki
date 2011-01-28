@@ -4,7 +4,7 @@ class State
 
   # Finds the region(s) of a state. In Visual Paradigm, a state cannot have substates unless
   # it contains at least one region. If we find several regions, they will be interpreted
-  # as concurrent substates. If we find only one region, it has no purpose in the Ki code,
+  # as concurrent substates. If we find only one region, it has no purpose in the statechart code,
   # so it will be ignored and its substates will become substates of the state containing
   # the region.
   REGION_SELECTOR = 'ChildModels > Model[displayModelType="Region"]'
