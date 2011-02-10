@@ -1,6 +1,6 @@
 module Printer
   STATE_START = Erubis::Eruby.new <<-EOT
-<%= indent %><%= @name %>: SC.State.design({
+<%= indent %><%= @name %>: Ki.State.design({
 
 <% if @initial_substate %>
 <%= indent %>\tinitialSubstate: '<%= @initial_substate.name %>',
@@ -62,7 +62,7 @@ module Printer
 
     EOS
 
-    puts "#{$project_name}.statechart = SC.Statechart.create({"
+    puts "#{$project_name}.statechart = Ki.Statechart.create({"
     puts
     puts root_state.output   # recursively prints the whole state tree
     puts '});'
