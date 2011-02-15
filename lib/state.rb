@@ -13,8 +13,11 @@ class State
   # transition to the default state ('initialSubstate') of the containing state.
   INITIAL_PSEUDO_STATE_SELECTOR = 'Model[displayModelType="Initial Pseudo State"]'
 
+  # Finds a history state, if one exists
+  HISTORY_STATE_SELECTOR = 'Model[displayModelType$="History"]'
+
   @@state_map = {}
-  attr_reader :name, :initial_substate
+  attr_reader :name, :parent_state, :initial_substate
   attr_accessor :transitions
 
   def self.add_transition(transition)
@@ -39,6 +42,8 @@ class State
     @substate_selector = [region_selector, child_selector, STATE_SELECTOR].compact.join(' > ')
     @initial_pseudo_state_selector =
       [region_selector, child_selector, INITIAL_PSEUDO_STATE_SELECTOR].compact.join(' > ')
+    @history_state_selector =
+      [region_selector, child_selector, HISTORY_STATE_SELECTOR].compact.join(' > ')
 
     @transitions = []
     @nontransition_events = []
@@ -81,6 +86,7 @@ class State
     else
       create_substates
       find_initial_substate
+      create_history_state
     end
   end
 
@@ -111,6 +117,13 @@ class State
         initial_substate_id = transition_node.>(Transition::TO_SELECTOR).first['id']
         @initial_substate = @@state_map[initial_substate_id]
       end
+    end
+  end
+
+  def create_history_state
+    match = @node.>(@history_state_selector)
+    unless match.empty?
+      @history_state = State.new(match.first, self, @level + 1)
     end
   end
 
@@ -171,13 +184,19 @@ class State
     str = Printer::TRANSITIONS_COMMENT.evaluate(self)
     transition_strings = []
     @transitions.each do |transition|
+      destination_state = @@state_map[transition.to_id]
       context = {
         :indent => indent,
         :name => transition.name,
         :action => transition.action,
-        :dest_path => @@state_map[transition.to_id].path
       }
-      transition_strings << Printer::TRANSITION.evaluate(context)
+      if destination_state.name =~ /History$/
+        context.merge!({:parent_path => destination_state.parent_state.path})
+        transition_strings << Printer::HISTORY_TRANSITION.evaluate(context)
+      else
+        context.merge!({:dest_path => destination_state.path})
+        transition_strings << Printer::TRANSITION.evaluate(context)
+      end
     end
     str += transition_strings.join(",\n\n")
     str

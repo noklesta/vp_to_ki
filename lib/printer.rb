@@ -45,6 +45,13 @@ module Printer
                                  "<% end %>\n" +
                                  "<%= @indent %>\t\tthis.gotoState('<%= @dest_path %>');\n" +
                                  "<%= @indent %>\t}")
+
+  HISTORY_TRANSITION = Erubis::Eruby.new("<%= @indent %>\t<%= @name %>: function() {\n" +
+                                 "<% if @action %>\n" +
+                                 "<%= @indent %>\t\tthis.<%= @action %>();\n" +
+                                 "<% end %>\n" +
+                                 "<%= @indent %>\t\tthis.gotoHistoryState('<%= @parent_path %>');\n" +
+                                 "<%= @indent %>\t}")
   
   SUBSTATES_COMMENT = Erubis::Eruby.new <<-EOT
 <%= indent %>\t// Substates of '<%= @name %>' state
