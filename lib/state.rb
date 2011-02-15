@@ -193,6 +193,9 @@ class State
       if destination_state.name =~ /History$/
         context.merge!({:parent_path => destination_state.parent_state.path})
         transition_strings << Printer::HISTORY_TRANSITION.evaluate(context)
+      elsif destination_state == self
+        context.merge!({:reenter => true})
+        transition_strings << Printer::TRANSITION.evaluate(context)
       else
         context.merge!({:dest_path => destination_state.path})
         transition_strings << Printer::TRANSITION.evaluate(context)

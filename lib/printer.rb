@@ -43,8 +43,12 @@ module Printer
                                  "<% if @action %>\n" +
                                  "<%= @indent %>\t\tthis.<%= @action %>();\n" +
                                  "<% end %>\n" +
+                                 "<% if @reenter %>\n" +
+                                 "<%= @indent %>\t\tthis.reenter();\n" +
+                                 "<% else %>\n" +
                                  "<%= @indent %>\t\tthis.gotoState('<%= @dest_path %>');\n" +
-                                 "<%= @indent %>\t}")
+                                 "<% end %>\n" +
+                                 "<%= @indent %>\t}\n")
 
   HISTORY_TRANSITION = Erubis::Eruby.new("<%= @indent %>\t<%= @name %>: function() {\n" +
                                  "<% if @action %>\n" +
