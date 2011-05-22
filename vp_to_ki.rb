@@ -11,9 +11,9 @@ require 'rubygems'
 require 'nokogiri'
 require 'erubis'
 
-require 'lib/state'
-require 'lib/transition'
-require 'lib/printer'
+require_relative 'lib/state'
+require_relative 'lib/transition'
+require_relative 'lib/printer'
 
 if ARGV.size < 1
   puts "Usage: #{$0} XML-FILE" 
